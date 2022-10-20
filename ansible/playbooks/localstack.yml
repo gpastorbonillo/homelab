@@ -12,12 +12,25 @@
       validate: 'visudo -cf %s'
     become: yes
 
+  - name: Terraform prerequisites
+    ansible.builtin.shell: '{{ item }}'
+    with_items:
+    - 'wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg'
+    - 'gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint'
+    - 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list'
+    become: yes
+
   - name: Install & update a list of packages
     ansible.builtin.apt:
       name:
       - python3
+      - gnupg 
+      - software-properties-common
       - pip
       - docker.io
+      - terraform
+      - tree 
+      - awscli
       state: latest
       update_cache: yes
     become: yes
