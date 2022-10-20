@@ -1,0 +1,36 @@
+---
+- name: Set Up Localstack VM 
+  hosts: LOCALSTACK
+  become: yes
+  tasks:
+
+  - name: Make gpastor sudo passwordless
+    lineinfile:
+      path: /etc/sudoers
+      state: present
+      regexp: '^%gpastor'
+      line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+      validate: 'visudo -cf %s'
+
+  - name: Install & update a list of packages
+    ansible.builtin.apt:
+      name:
+      - python3
+      - pip
+      - docker.io
+      state: latest
+      update_cache: yes
+
+  - name: Install python packages
+    ansible.builtin.pip: 
+      name: 
+      - localstack 
+      - docker
+
+  - name: pull localstack container
+    docker_image: 
+      name: localstack/localstack
+      tag: latest
+
+  - name: Start localstack
+    ansible.builtin.shell: localstack start

@@ -1,0 +1,49 @@
+---
+- name: Update web servers
+  hosts: localhost
+  become: yes
+  tasks:
+
+  - name: Make gpastor sudo passwordless
+    lineinfile:
+      path: /etc/sudoers
+      state: present
+      regexp: '^%gpastor'
+      line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+      validate: 'visudo -cf %s'     
+    become: yes
+
+  - name: Set hostname
+    ansible.builtin.hostname:
+      name: UBNT
+      use: systemd
+    
+  - name: Terraform prerequisites 
+    ansible.builtin.shell: '{{ item }}'
+    with_items:
+    - 'gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint'
+    - 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list' 
+  
+  - name: Install & update a list of packages
+    ansible.builtin.apt:
+      name:
+      - ansible
+      - git
+      - docker
+      - docker-compose
+      - software-properties-common
+      - gnupg 
+      - terraform
+      - sshpass
+      - tree
+      - awscli
+      - dnsmasq
+      state: latest
+      update_cache: yes
+
+
+  - name: No DNS Workaround
+    lineinfile:
+      dest: /etc/hosts 
+      line: my-bucket.localstack.gpastor.net 192.168.1.3
+      state: present
