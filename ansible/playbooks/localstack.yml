@@ -12,27 +12,24 @@
       validate: 'visudo -cf %s'
     become: yes
 
-  - name: Terraform prerequisites
-    ansible.builtin.shell: '{{ item }}'
-    with_items:
-    - 'wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg'
-    - 'gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint'
-    - 'echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list'
-    become: yes
-
   - name: Install & update a list of packages
     ansible.builtin.apt:
       name:
-      - python3
-      - gnupg 
+      - gnupg
       - software-properties-common
+      - python3
       - pip
       - docker.io
-      - terraform
       - tree 
       - awscli
       state: latest
       update_cache: yes
+    become: yes
+
+  - name: Install terraform
+    community.general.snap:
+      name: terraform
+      classic: true
     become: yes
 
   - name: Install python packages
@@ -54,8 +51,8 @@
       state: present
       key: '{{ item }}'
     with_file:  
-    - keys/gpastor.pub
-    - keys/ubnt.pub
+    - ../keys/gpastor.pub
+    - ../keys/ubnt.pub
 
   - name: pull localstack container
     docker_image: 
