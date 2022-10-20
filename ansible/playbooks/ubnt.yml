@@ -4,11 +4,6 @@
   become: yes
   tasks:
 
-  - name: Checkout github repo 
-    ansible.builtin.git:
-      repo: git@github.com:gpastorbonillo/homelab.git
-      dest: ../../../
-
   - name: Make gpastor sudo passwordless
     lineinfile:
       path: /etc/sudoers
