@@ -35,14 +35,14 @@
       groups: docker
     become: true
 
+  - name: Set authorized keys taken from url
+    ansible.posix.authorized_key:
+      user: gpastor
+      state: present
+      key: "{{ lookup('url', 'https://raw.githubusercontent.com/gpastorbonillo/homelab/main/keys/id_rsa.pub?token=GHSAT0AAAAAAB2E3BK6XOXNOQDHA5BH5DN6Y2RQQOQ', split_lines=False) }}"
+
   - name: pull localstack container
     docker_image: 
       name: localstack/localstack
       tag: latest
 
-  - name: Start localstack
-    ansible.builtin.shell: localstack start
-    register: out
-
-  - debug: 
-      var: out
