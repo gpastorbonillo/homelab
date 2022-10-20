@@ -1,7 +1,6 @@
 ---
 - name: Set Up Localstack VM 
   hosts: LOCALSTACK
-  become: yes
   tasks:
 
   - name: Make gpastor sudo passwordless
@@ -11,6 +10,7 @@
       regexp: '^%gpastor'
       line: '%wheel ALL=(ALL) NOPASSWD: ALL'
       validate: 'visudo -cf %s'
+    become: yes
 
   - name: Install & update a list of packages
     ansible.builtin.apt:
@@ -20,12 +20,20 @@
       - docker.io
       state: latest
       update_cache: yes
+    become: yes
 
   - name: Install python packages
     ansible.builtin.pip: 
       name: 
       - localstack 
       - docker
+
+  - name: Add user to docker group 
+    user:
+      name: gpastor
+      append: yes
+      groups: docker
+    become: true
 
   - name: pull localstack container
     docker_image: 
@@ -34,3 +42,7 @@
 
   - name: Start localstack
     ansible.builtin.shell: localstack start
+    register: out
+
+  - debug: 
+      var: out
