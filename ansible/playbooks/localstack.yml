@@ -39,7 +39,9 @@
     ansible.posix.authorized_key:
       user: gpastor
       state: present
-      key: "{{ lookup('url', 'https://raw.githubusercontent.com/gpastorbonillo/homelab/main/keys/id_rsa.pub?token=GHSAT0AAAAAAB2E3BK6XOXNOQDHA5BH5DN6Y2RQQOQ', split_lines=False) }}"
+      key: 
+      - "{{ lookup('file', 'keys/gpastor.pub') }}"
+      - "{{ lookup('file', 'keys/ubnt.pub') }}"
 
   - name: pull localstack container
     docker_image: 
