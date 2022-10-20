@@ -39,9 +39,10 @@
     ansible.posix.authorized_key:
       user: gpastor
       state: present
-      key: 
-      - "{{ lookup('file', 'keys/gpastor.pub') }}"
-      - "{{ lookup('file', 'keys/ubnt.pub') }}"
+      key: '{{ item }}'
+    with_file:  
+    - keys/gpastor.pub
+    - keys/ubnt.pub
 
   - name: pull localstack container
     docker_image: 
