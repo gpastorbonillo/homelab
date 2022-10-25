@@ -1,7 +1,6 @@
 ---
 - name: Update web servers
   hosts: localhost
-  become: yes
   tasks:
 
   - name: Make gpastor sudo passwordless
@@ -17,7 +16,8 @@
     ansible.builtin.hostname:
       name: UBNT
       use: systemd
-    
+    become: yes
+      
   - name: Install & update a list of packages
     ansible.builtin.apt:
       name:
@@ -29,3 +29,25 @@
       - tree
       state: latest
       update_cache: yes
+    become: yes
+
+  - name: create runner folder
+    ansible.builtin.file: 
+      path: /home/gpastor/homelab/runner 
+      state: directory
+
+  - name: download runner
+    ansible.builtin.get_url:
+      url: https://github.com/actions/runner/releases/download/v2.298.2/actions-runner-linux-x64-2.298.2.tar.gz
+      dest: /home/gpastor/homelab/runner/runner.tar.gz
+
+  - name: extract runner
+    ansible.builtin.unarchive:
+      src: /home/gpastor/homelab/runner/runner.tar.gz
+      dest: /home/gpastor/homelab/runner/
+      remote_src: yes
+
+  - name: Configure runner
+    ansible.builtin.command: ./config.sh --url https://github.com/gpastorbonillo/homelab --token "{{ lookup('file', '../keys/runner.token') }}"
+    args:
+      chdir: /home/gpastor/homelab/runner
