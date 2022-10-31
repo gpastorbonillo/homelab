@@ -1,4 +1,5 @@
 provider "aws" {
+  version                     = "4.34.0"
   access_key                  = "test"
   secret_key                  = "test"
   region                      = "us-east-1"
